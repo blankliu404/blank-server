@@ -1,0 +1,29 @@
+<server>
+    <port>8888</port>
+    <welcome-page>server/defaultpage/index.html</welcome-page>
+    <error-page>server/defaultpage/error.html</error-page>
+    <servlet>
+        <name>index</name>
+        <class>servlet.IndexServlet</class>
+    </servlet>
+    <servlet-mapping>
+        <name>index</name>
+        <url>/index</url>
+    </servlet-mapping>
+    <servlet>
+        <name>login</name>
+        <class>servlet.LoginServlet</class>
+    </servlet>
+    <servlet-mapping>
+        <name>login</name>
+        <url>/login</url>
+    </servlet-mapping>
+    <servlet>
+        <name>baidu</name>
+        <class>servlet.BaiduServlet</class>
+    </servlet>
+    <servlet-mapping>
+        <name>baidu</name>
+        <url>/baidu</url>
+    </servlet-mapping>
+</server>
