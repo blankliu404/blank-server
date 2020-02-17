@@ -2,14 +2,10 @@ package server.service;
 
 import server.xmlutil.ServerHandler;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URLDecoder;
+import java.util.*;
 
 /**
  * Request
@@ -27,7 +23,8 @@ public class Request {
     private static String route;
     private static String protocol;
 
-    private Map<String,String> params;
+    private Map<String, Set<String>> params;
+
     // 默认code 200
     private int code = 200;
     private static Map<Integer,String> codeInfo;
@@ -78,15 +75,23 @@ public class Request {
         if (p.contains("=")) {
             // 可分割
             String[] temp = p.split("=");
-            if (temp.length < 2) {
-                // 处理特殊如 name=
-                params.put(temp[0],"");
-            }else {
-                params.put(temp[0],temp[1]);
+            if (temp.length > 0) {
+                if (!params.containsKey(temp[0])) {
+                    params.put(temp[0],new HashSet<>());
+                }
+                if (temp.length < 2) {
+                    // 处理特殊如 name=
+                    params.get(temp[0]).add("");
+                }else {
+                    params.get(temp[0]).add(temp[1]);
+                }
             }
         }else {
             // 不可分割 给值赋""
-            params.put(p,"");
+            if (!params.containsKey(p)) {
+                params.put(p,new HashSet<>());
+            }
+            params.get(p).add("");
         }
     }
 
@@ -139,12 +144,39 @@ public class Request {
     }
 
     /**
-     * 获取参数
+     * 获取参数单值
      * @param key
      * @return
      */
-    public String getParameter(String key) {
-        return params.get(key);
+    public String getParameter(String key) throws UnsupportedEncodingException {
+        String value = null;
+        if (params.containsKey(key)) {
+            Set<String> strings = params.get(key);
+            Object[] values = strings.toArray();
+            if (values.length == 1)
+                value = values[0].toString();
+        }
+        return URLDecoder.decode(value,"UTF-8");
+    }
+
+    /**
+     * 获取参数多值
+     * @param key
+     * @return
+     */
+    public String[] getParameterValues(String key) throws UnsupportedEncodingException {
+        String[] retValues = null;
+        if (params.containsKey(key)) {
+            Set<String> strings = params.get(key);
+            Object[] values = strings.toArray();
+            if (values.length > 1) {
+                retValues = new String[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    retValues[i] = URLDecoder.decode(values[i].toString(),"UTF-8");
+                }
+            }
+        }
+        return retValues;
     }
 
     public static void pushInfo(String content, int code) throws IOException {
